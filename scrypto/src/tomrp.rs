@@ -141,6 +141,9 @@ mod tomrp {
             .globalize()
         }
 
+        /*
+        @notice function to transfer Non Fungible Resources to their respective owners
+         */
         pub fn transfer_resources(&mut self) {
             let mut i = dec!(1);
 
