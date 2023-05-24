@@ -1,6 +1,6 @@
 use scrypto::prelude::*;
 
-#[derive(ScryptoSbor, NonFungibleData)]
+#[derive(ScryptoSbor, NonFungibleData, Debug)]
 pub struct TomrpNFTData {
     pub name: String,
     pub key_image_url: String,
@@ -9,13 +9,15 @@ pub struct TomrpNFTData {
 
 #[blueprint]
 mod tomrp {
+
     struct Tomrp {
         tomrp_vault: Vault,
         admin_transfer_badge: Vault,
+        owners: Vec<Address>,
     }
 
     impl Tomrp {
-        pub fn new() -> ComponentAddress {
+        pub fn instantiate_tomrp() -> ComponentAddress {
             /*
             @title Admin Transfer badge
             @notice A badge used to identify the admin. Only admin can transfer resources
@@ -30,6 +32,7 @@ mod tomrp {
             @title Tomrp Bucket
             @notice a temporary storage used to store the resources
              */
+
             let tomrp_bucket = ResourceBuilder::new_integer_non_fungible()
                 .metadata("name", "TOMRP NFT Collection")
                 .metadata("description", "21 piece digital art collection by tomrp")
@@ -39,7 +42,7 @@ mod tomrp {
                         TomrpNFTData {
                             name: String::from("TOMRP#1"),
                             key_image_url: String::from("https://ipfs.io/ipfs/QmTNQDXdWfbRXPHv9MVbcFippv9FUo7Sk3FsrMBxLfF9LW/1.png"),
-                            owner: String::from("rdx1qsp8g2ds6pa9ntv3alvvqa6try6quxq00fwfkcgys0rvz7k5rcsh40q9s7q3g")
+                            owner: String::from("rdx1qspjd2whal3zzy8yjrx9w0867hhpghf7exq22a6pytn9me5ltx442aglxl0er") 
                         },
                     ),
                     (
@@ -130,28 +133,69 @@ mod tomrp {
                             owner: String::from("rdx1qsp3dqdxx4llr4en0u0mdx9sma7nnkzesawm99e2cjuenx3h0ycxsrcav5ldh")
                         },
                     ),
-                    
                 ]);
 
             Self {
                 tomrp_vault: Vault::with_bucket(tomrp_bucket),
                 admin_transfer_badge: Vault::with_bucket(transfer_badge),
+                owners: Vec::new(),
             }
             .instantiate()
             .globalize()
         }
 
         /*
-        @notice function to transfer Non Fungible Resources to their respective owners
+        @notice function to add owners
          */
-        pub fn transfer_resources(&mut self) {
-            let mut i = dec!(1);
+        pub fn add_owners(&mut self, _owners: Vec<Address>) {
+            for owner in _owners {
+                self.owners.push(owner);
+            }
+        }
 
+        /*
+        @notice - function to get owners
+         */
+        pub fn get_owner(&self, _i: u32) -> Address {
+            let index = _i.to_usize().unwrap();
+            return self.owners[index];
+        }
+
+        /*
+        @notice - function to get the total supply of vault
+         */
+        fn get_total_supply(&mut self) -> Decimal {
             let tomrp_resuource_address = self.tomrp_vault.resource_address();
+
             let total_supply = borrow_resource_manager!(tomrp_resuource_address).total_supply();
 
-            while i < total_supply {
-                // borrow_resource_manager!(tomrp_resuource_address).get_non_fungible_data();
+            return total_supply;
+        }
+
+        /*
+        @notice - function to get the non fungible buckets from their ids
+         */
+        fn get_nfr_bucket_from_id(&mut self, id: &Decimal) -> Bucket {
+            let tomrp_nfr_id: u64 = (id.to_string()).parse().unwrap();
+            let nfr_bucket = self
+                .tomrp_vault
+                .take_non_fungible(&NonFungibleLocalId::Integer(
+                    IntegerNonFungibleLocalId::new(tomrp_nfr_id),
+                ));
+            nfr_bucket
+        }
+
+        /*
+        @notice - function to transfer Non Fungible Resources to their respective owners
+         */
+        pub fn transfer_resources(&mut self, _recipients: Vec<Address>) {
+            let mut i = dec!(1);
+
+            let total_supply = self.get_total_supply();
+
+            while i <= total_supply {
+                let _tomrp_nfr_bucket = self.get_nfr_bucket_from_id(&i);
+
                 i += 1;
             }
         }
