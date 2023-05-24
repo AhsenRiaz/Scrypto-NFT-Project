@@ -1,0 +1,10 @@
+# Withdrawing 100 XRD from the account component
+CALL_METHOD
+    Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh")
+    "lock_fee"
+    Decimal("100"); 
+
+CALL_METHOD
+    Address("component_sim1q0aj7xxpd879nk9g9tt8j3zw5f5yqutw5vqzswqjam4qmkyw09")
+    "add_owners"
+    Array<Address>(Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh"), Address("account_sim1q3pu6fp5xpulm0gjlgmckkzrllpx6t658z33hj25d0uq50k9yx"), Address("account_sim1qnm0er7lmu2xl003fl07hkwq9e6fa5lekrl8pakwj52q00uw3m"));
