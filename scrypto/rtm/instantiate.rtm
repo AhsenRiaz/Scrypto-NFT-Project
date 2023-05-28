@@ -6,7 +6,7 @@ CALL_METHOD
 
 
 CALL_FUNCTION
-    Address("package_sim1qz7j2txa32wu07va6zzrtcwr8swz7jwk3v7lhfkafkjspp2cm8")
+    Address("package_sim1qp40t7t4sgq7ncr3kat3ssss55dy5h47wu3aqqzedgcscj3aec")
     "Tomrp"
     "instantiate_tomrp";
 
