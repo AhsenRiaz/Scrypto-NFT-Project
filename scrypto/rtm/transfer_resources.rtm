@@ -5,6 +5,6 @@ CALL_METHOD
     Decimal("100"); 
 
 CALL_METHOD
-    Address("component_sim1qwjkcfntdfuhrf24nz39s38d4raszk4gee46l3pa5k0s4jjrpe")
+    Address("component_sim1q0v6zzc6tp2c002g66rhh887rdfzv66kp5zvhcekcx4spm0v2g")
     "transfer_resources"
-    Array<Address>(Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh"));
+   ;
