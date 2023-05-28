@@ -13,7 +13,7 @@ mod tomrp {
     struct Tomrp {
         tomrp_vault: Vault,
         admin_transfer_badge: Vault,
-        owners: Vec<Address>,
+        id_to_nft_map: BTreeMap<u32, ComponentAddress>,
     }
 
     impl Tomrp {
@@ -22,7 +22,7 @@ mod tomrp {
             @title Admin Transfer badge
             @notice A badge used to identify the admin. Only admin can transfer resources
             */
-            let transfer_badge = ResourceBuilder::new_fungible()
+            let admin_badge = ResourceBuilder::new_fungible()
                 .metadata("name", "Transfer Badge")
                 .metadata("description", "Transfer Authority For TOMRP Tokens")
                 .divisibility(DIVISIBILITY_NONE)
@@ -137,46 +137,22 @@ mod tomrp {
 
             Self {
                 tomrp_vault: Vault::with_bucket(tomrp_bucket),
-                admin_transfer_badge: Vault::with_bucket(transfer_badge),
-                owners: Vec::new(),
+                admin_transfer_badge: Vault::with_bucket(admin_badge),
+                id_to_nft_map: BTreeMap::new(),
             }
             .instantiate()
             .globalize()
         }
 
-        /*
-        @notice function to add owners
-         */
-        pub fn add_owners(&mut self, _owners: Vec<Address>) {
-            for owner in _owners {
-                self.owners.push(owner);
+        pub fn set_ids_to_nfts(&mut self, ids_to_nfts: BTreeMap<u32, ComponentAddress>) {
+            for (k, v) in ids_to_nfts.into_iter() {
+                self.id_to_nft_map.insert(k, v);
             }
+
+            info!("set_ids_to_nfts : {:?}", self.id_to_nft_map);
         }
 
-        /*
-        @notice - function to get owners
-         */
-        pub fn get_owner(&self, _i: u32) -> Address {
-            let index = _i.to_usize().unwrap();
-            return self.owners[index];
-        }
-
-        /*
-        @notice - function to get the total supply of vault
-         */
-        fn get_total_supply(&mut self) -> Decimal {
-            let tomrp_resuource_address = self.tomrp_vault.resource_address();
-
-            let total_supply = borrow_resource_manager!(tomrp_resuource_address).total_supply();
-
-            return total_supply;
-        }
-
-        /*
-        @notice - function to get the non fungible buckets from their ids
-         */
-        fn get_nfr_bucket_from_id(&mut self, id: &Decimal) -> Bucket {
-            let tomrp_nfr_id: u64 = (id.to_string()).parse().unwrap();
+        fn get_nfr_bucket_from_id(&mut self, tomrp_nfr_id: u64) -> Bucket {
             let nfr_bucket = self
                 .tomrp_vault
                 .take_non_fungible(&NonFungibleLocalId::Integer(
@@ -188,15 +164,14 @@ mod tomrp {
         /*
         @notice - function to transfer Non Fungible Resources to their respective owners
          */
-        pub fn transfer_resources(&mut self, _recipients: Vec<Address>) {
-            let mut i = dec!(1);
-
-            let total_supply = self.get_total_supply();
-
-            while i <= total_supply {
-                let _tomrp_nfr_bucket = self.get_nfr_bucket_from_id(&i);
-
-                i += 1;
+        pub fn transfer_resources(&mut self) {
+            for (k, v) in self.id_to_nft_map.clone() {
+                info!("k : {} || v : {}", k, v.to_hex());
+                let tomrp_nfr_bucket = self.get_nfr_bucket_from_id(k.into());
+                info!("tomrp_nft_bucke : {:?}", tomrp_nfr_bucket);
+                let account_component = borrow_component!(v);
+                info!("account_component : {:?}", account_component.0);
+                account_component.call::<Bucket>("deposit", scrypto_args!(tomrp_nfr_bucket));
             }
         }
     }
