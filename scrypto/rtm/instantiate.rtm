@@ -6,7 +6,11 @@ CALL_METHOD
 
 
 CALL_FUNCTION
-    Address("package_sim1qp40t7t4sgq7ncr3kat3ssss55dy5h47wu3aqqzedgcscj3aec")
+    Address("package_sim1qpwh0c36fq5uc00qffuj05xj9xlssqddxr8h55kqxp8qv676mh")
     "Tomrp"
     "instantiate_tomrp";
 
+CALL_METHOD
+    Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");
