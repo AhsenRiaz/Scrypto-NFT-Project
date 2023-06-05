@@ -1,0 +1,20 @@
+# Withdrawing 100 XRD from the account component
+CALL_METHOD
+    Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh")
+    "lock_fee"
+    Decimal("100"); 
+
+# Create Proof for the badge
+CALL_METHOD
+    Address("account_sim1q3w7gsxvpqf372zdjsfjlv36rjjh9e3r35nc3fw0d3gsnzgvsh")
+    "create_proof"
+    Address("resource_sim1qx7az5z22axkhey9rmycamgvk9pu4t0dyv44jelhuk0sz57tks");
+
+# Take the proof the auth zone
+POP_FROM_AUTH_ZONE Proof("admin_badge");
+
+# Pass the proof to the method
+CALL_METHOD
+    Address("component_sim1qw7az5z22axkhey9rmycamgvk9pu4t0dyv44jelhuk0s82xsfc")
+    "transfer_resources"
+    Proof("admin_badge");
