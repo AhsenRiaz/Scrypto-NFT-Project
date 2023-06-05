@@ -12,19 +12,19 @@ mod tomrp {
 
     struct Tomrp {
         tomrp_vault: Vault,
-        admin_transfer_badge: Vault,
+        admin_badge_address: ResourceAddress,
         id_to_nft_map: BTreeMap<u32, ComponentAddress>,
     }
 
     impl Tomrp {
-        pub fn instantiate_tomrp() -> ComponentAddress {
+        pub fn instantiate_tomrp() -> (ComponentAddress, Bucket) {
             /*
             @title Admin Transfer badge
             @notice A badge used to identify the admin. Only admin can transfer resources
             */
             let admin_badge = ResourceBuilder::new_fungible()
-                .metadata("name", "Transfer Badge")
-                .metadata("description", "Transfer Authority For TOMRP Tokens")
+                .metadata("name", "admin_badge")
+                .metadata("description", "Admin Authority For TOMRP Tokens")
                 .divisibility(DIVISIBILITY_NONE)
                 .mint_initial_supply(1);
 
@@ -135,21 +135,33 @@ mod tomrp {
                     ),
                 ]);
 
-            Self {
+            let component_address = Self {
                 tomrp_vault: Vault::with_bucket(tomrp_bucket),
-                admin_transfer_badge: Vault::with_bucket(admin_badge),
+                admin_badge_address: admin_badge.resource_address(),
                 id_to_nft_map: BTreeMap::new(),
             }
-            .instantiate()
-            .globalize()
+            .instantiate();
+
+            return (component_address.globalize(), admin_badge);
         }
 
-        pub fn set_ids_to_nfts(&mut self, ids_to_nfts: BTreeMap<u32, ComponentAddress>) {
+        pub fn set_ids_to_nfts(
+            &mut self,
+            ids_to_nfts: BTreeMap<u32, ComponentAddress>,
+            admin: Proof,
+        ) {
+            let admin_badge_resource_address = self.admin_badge_address;
+
+            let validation_mode =
+                ProofValidationMode::ValidateResourceAddress(admin_badge_resource_address);
+
+            admin
+                .validate_proof(validation_mode)
+                .expect("TOMRP: Unauthorized Access");
+
             for (k, v) in ids_to_nfts.into_iter() {
                 self.id_to_nft_map.insert(k, v);
             }
-
-            info!("set_ids_to_nfts : {:?}", self.id_to_nft_map);
         }
 
         fn get_nfr_bucket_from_id(&mut self, tomrp_nfr_id: u64) -> Bucket {
@@ -164,14 +176,23 @@ mod tomrp {
         /*
         @notice - function to transfer Non Fungible Resources to their respective owners
          */
-        pub fn transfer_resources(&mut self) {
+        pub fn transfer_tomrp(&mut self, admin: Proof) {
+            let admin_badge_resource_address = self.admin_badge_address;
+
+            let validation_mode =
+                ProofValidationMode::ValidateResourceAddress(admin_badge_resource_address);
+
+            admin
+                .validate_proof(validation_mode)
+                .expect("TOMRP: Unauthorized Access");
+
             for (k, v) in self.id_to_nft_map.clone() {
                 info!("k : {} || v : {}", k, v.to_hex());
                 let tomrp_nfr_bucket = self.get_nfr_bucket_from_id(k.into());
                 info!("tomrp_nft_bucke : {:?}", tomrp_nfr_bucket);
                 let account_component = borrow_component!(v);
                 info!("account_component : {:?}", account_component.0);
-                account_component.call::<Bucket>("deposit", scrypto_args!(tomrp_nfr_bucket));
+                account_component.call::<()>("deposit", scrypto_args!(tomrp_nfr_bucket));
             }
         }
     }
