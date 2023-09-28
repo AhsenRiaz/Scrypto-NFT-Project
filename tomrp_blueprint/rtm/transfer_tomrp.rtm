@@ -1,0 +1,19 @@
+# Withdrawing 100 XRD from the account component
+CALL_METHOD
+    Address("account_sim1c97hwc3dv98dlyusfuugy2j2v5rsqgjrdswqqwfazkffy4z2c5nh3j")
+    "lock_fee"
+    Decimal("100"); 
+
+
+# Create Proof for the badge
+CALL_METHOD
+    Address("account_sim1c97hwc3dv98dlyusfuugy2j2v5rsqgjrdswqqwfazkffy4z2c5nh3j")
+    "create_proof_of_amount"
+    Address("resource_sim1t42mvp5sa4mk75hatr360xk6gc3juydu938ufl73pud04sk0nex9zg")
+    Decimal("1");
+
+
+# Pass the proof to the method
+CALL_METHOD
+    Address("component_sim1czmk509q38g0zznaxxd6wrjaams5ksgx9gwhkhxsk5v8ker7he6057")
+    "transfer_tomrp";

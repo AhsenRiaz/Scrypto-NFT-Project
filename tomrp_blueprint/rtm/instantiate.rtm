@@ -1,0 +1,16 @@
+# Withdrawing 100 XRD from the account component
+CALL_METHOD
+    Address("account_sim1c97hwc3dv98dlyusfuugy2j2v5rsqgjrdswqqwfazkffy4z2c5nh3j")
+    "lock_fee"
+    Decimal("100"); 
+
+
+CALL_FUNCTION
+    Address("package_sim1p5y8zxuvjaxnufmqp7jevml7f3v59mk4p4c2f2tqkvu4f9y7ye6gsf")
+    "Tomrp"
+    "instantiate_tomrp";
+
+CALL_METHOD
+    Address("account_sim1c97hwc3dv98dlyusfuugy2j2v5rsqgjrdswqqwfazkffy4z2c5nh3j")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");
